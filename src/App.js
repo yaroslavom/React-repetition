@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
-import MySelect from "./components/UI/select/MySelect";
+import MyButton from "./components/UI/button/MyButton";
+import MyModal from "./components/UI/modal/MyModal";
 
 function App() {
   const [posts, setPosts] = useState([
@@ -14,29 +16,45 @@ function App() {
     { id: 2, key: "social", title: "Facebook", description: "" },
     { id: 3, key: "social", title: "VKontakte", description: "" },
   ]);
-  const [selectSort, setSelectedSort ] = useState('')
+
+  const [modal, setModal] = useState(false)
+  const [filter, setFilter] = useState({ sort: "", query: "" });
+
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
+    setModal(false);
   };
   const removePost = (post) => {
     setPosts(posts.filter((p) => p.id !== post));
   };
-  const sortPosts = (sort) => {
-    setSelectedSort(sort);
-    setPosts([...posts].sort(( a, b ) => a[sort].localeCompare(b[sort])));
-  }
+
+  const sortedPosts = useMemo(() => {
+    console.log("work");
+    if (filter.sort) {
+      return [...posts].sort((a, b) =>
+        a[filter.sort].localeCompare(b[filter.sort])
+      );
+    }
+    return posts;
+  }, [filter.sort, posts]);
+
+  const sortedAndSearchedPosts = useMemo(() => {
+    console.log(filter.query);
+    return sortedPosts.filter((post) =>
+      post.title.toLowerCase().includes(filter.query)
+    );
+  }, [filter.query, sortedPosts]);
 
   return (
     <div className="App">
-      <PostForm create={createPost} />
-      <MySelect value={selectSort} onChange={sortPosts} defaultValue={"Sorting"} options={[{value: 'title', name: 'Sort by Name'}, {value: 'description', name: 'Sort by Description'}]}/>
-      {posts.length ? (
-        <PostList posts={posts} remove={removePost} />
-      ) : (
-        <h1 style={{ textAlign: "center", fontWeight: 500 }}>
-          Posts are missing
-        </h1>
-      )}
+      <PostFilter filter={filter} setFilter={setFilter} />
+      <MyButton onClick={()=> setModal(true)} >
+        Create new post
+      </MyButton>
+      <MyModal visible={modal} setVisible={setModal}>
+        <PostForm create={createPost} />
+      </MyModal>
+      <PostList posts={sortedAndSearchedPosts} remove={removePost} />
     </div>
   );
 }
