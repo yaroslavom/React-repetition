@@ -29,7 +29,6 @@ function App() {
   };
 
   const sortedPosts = useMemo(() => {
-    console.log("work");
     if (filter.sort) {
       return [...posts].sort((a, b) =>
         a[filter.sort].localeCompare(b[filter.sort])
@@ -48,7 +47,7 @@ function App() {
   return (
     <div className="App">
       <PostFilter filter={filter} setFilter={setFilter} />
-      <MyButton onClick={()=> setModal(true)} >
+      <MyButton style={{ marginTop: 15 }} onClick={()=> setModal(true)} >
         Create new post
       </MyButton>
       <MyModal visible={modal} setVisible={setModal}>
