@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
@@ -20,6 +21,23 @@ function App() {
 
   const [modal, setModal] = useState(false)
   const [filter, setFilter] = useState({ sort: "", query: "" });
+  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+  //only when mounted;
+
+  async function fetchPosts() {
+    const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
+    // eslint-disable-next-line no-unused-expressions
+    return setPosts(response.data.map((post) => ({
+      id: post.id,
+      title: post.title,
+      key: 'social',
+      description: post.body
+    })));
+  };
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
@@ -28,10 +46,10 @@ function App() {
   const removePost = (post) => {
     setPosts(posts.filter((p) => p.id !== post));
   };
-  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
 
   return (
     <div className="App">
+      <button onClick={fetchPosts}>Get posts</button>
       <PostFilter filter={filter} setFilter={setFilter} />
       <MyButton style={{ marginTop: 15 }} onClick={()=> setModal(true)} >
         Create new post
